@@ -34,12 +34,15 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(192F, 192F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            this.AutoScroll = true;
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.DoubleBuffered = true;
             this.Name = "FormDocument";
             this.Text = "FormDocument";
+            this.LocationChanged += new System.EventHandler(this.FormDocument_LocationChanged);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FormDocument_MouseDown);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.FormDocument_MouseMove);
+            this.Move += new System.EventHandler(this.FormDocument_Move);
             this.ResumeLayout(false);
 
         }

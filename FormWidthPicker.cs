@@ -34,5 +34,17 @@ namespace MDIPaint
             DialogResult= DialogResult.Cancel;
             Close();
         }
+
+        private void trackBarWidth_MouseDown(object sender, MouseEventArgs e)
+        {
+            TrackBar trackBar = sender as TrackBar;
+
+            // Вычисляем новое значение на основе позиции мыши
+            double ratio = (double)e.X / trackBar.Width;
+            int newValue = (int)(ratio * (trackBar.Maximum - trackBar.Minimum)) + trackBar.Minimum;
+
+            // Устанавливаем новое значение
+            trackBar.Value = newValue;
+        }
     }
 }

@@ -67,6 +67,7 @@
             this.trackBarWidth.TabIndex = 0;
             this.trackBarWidth.Value = 1;
             this.trackBarWidth.ValueChanged += new System.EventHandler(this.trackBarWidth_ValueChanged);
+            this.trackBarWidth.MouseDown += new System.Windows.Forms.MouseEventHandler(this.trackBarWidth_MouseDown);
             // 
             // labelChosen
             // 
@@ -101,8 +102,10 @@
             // 
             // FormWidthPicker
             // 
+            this.AcceptButton = this.buttonOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(192F, 192F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            this.CancelButton = this.buttonCancel;
             this.ClientSize = new System.Drawing.Size(574, 229);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonOK);

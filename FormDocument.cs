@@ -12,14 +12,16 @@ namespace MDIPaint
 {
     public partial class FormDocument : Form
     {
+        int oldX, oldY;
+        Bitmap bitmap = new Bitmap(400, 400);
+        bool isMoving = false;
+
         public FormDocument()
         {
             InitializeComponent();
+            AutoScrollMinSize = new Size(bitmap.Width, bitmap.Height);
         }
-
-
-        int oldX, oldY;
-        Bitmap bitmap = new Bitmap(400, 400);
+        
         private void FormDocument_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
@@ -33,20 +35,37 @@ namespace MDIPaint
         {
             if (e.Button == MouseButtons.Left)
             {
+                int scrollX = this.AutoScrollPosition.X;
+                int scrollY = this.AutoScrollPosition.Y;
+
                 var g = Graphics.FromImage(bitmap);
-                g.DrawLine(new Pen(MainWindow.CurrentColor, MainWindow.CurrentWidth), oldX, oldY, e.X, e.Y);
-                oldX = e.X;
+                g.DrawLine(new Pen(MainWindow.CurrentColor, MainWindow.CurrentWidth), oldX - scrollX, oldY - scrollY, e.X - scrollX, e.Y - scrollY); oldX = e.X;
                 oldY = e.Y;
 
-                CreateGraphics().DrawImage(bitmap, 0, 0);
                 Invalidate();
             }
         }
 
+        private void FormDocument_LocationChanged(object sender, EventArgs e)
+        {
+            isMoving = false;
+            Invalidate();
+        }
+
+        private void FormDocument_Move(object sender, EventArgs e)
+        {
+            isMoving = true;
+        }
+
         protected override void OnPaint(PaintEventArgs e)
         {
+            if (isMoving)
+                return;
             base.OnPaint(e);
-            e.Graphics.DrawImage(bitmap, 0, 0);
+
+            int scrollX = this.AutoScrollPosition.X;
+            int scrollY = this.AutoScrollPosition.Y;
+            e.Graphics.DrawImage(bitmap, scrollX, scrollY);
         }
     }
 }
