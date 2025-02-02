@@ -72,7 +72,7 @@
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.MdiWindowListItem = this.окноToolStripMenuItem;
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(800, 42);
+            this.menuStrip1.Size = new System.Drawing.Size(800, 40);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -224,7 +224,7 @@
             this.toolStripSeparator3,
             this.toolStripWidthButton,
             this.toolStripWidthLabel});
-            this.toolStrip1.Location = new System.Drawing.Point(0, 42);
+            this.toolStrip1.Location = new System.Drawing.Point(0, 40);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(800, 36);
             this.toolStrip1.TabIndex = 1;
@@ -332,6 +332,7 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainWindow";
             this.Text = "Main Window";
+            this.MdiChildActivate += new System.EventHandler(this.MainWindow_MdiChildActivate);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.toolStrip1.ResumeLayout(false);

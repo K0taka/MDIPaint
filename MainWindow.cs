@@ -24,6 +24,7 @@ namespace MDIPaint
             CurrentColor = Color.Black;
             PickedColor = Color.White;
             CurrentWidth = 1;
+            UpdateSaveCommands(this);
         }
 
         private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
@@ -36,6 +37,7 @@ namespace MDIPaint
         {
             var frmDocument = new FormDocument();
             frmDocument.MdiParent = this;
+            frmDocument.StartPosition = FormStartPosition.Manual;
             frmDocument.Show();
         }
 
@@ -131,6 +133,7 @@ namespace MDIPaint
         {
             var widthPicker = new FormWidthPicker();
             var lastWidth = MainWindow.CurrentWidth;
+            widthPicker.StartPosition = FormStartPosition.CenterParent;
             if (widthPicker.ShowDialog() != DialogResult.OK)
             {
                 MainWindow.CurrentWidth = lastWidth;
@@ -161,12 +164,21 @@ namespace MDIPaint
             LayoutMdi(MdiLayout.ArrangeIcons);
         }
 
-        private void UpdateSaveCommands()
+        public static void UpdateSaveCommands(Form form)
         {
-            bool hasOpenDocuments = this.MdiChildren.Length > 0;
+            if (form is MainWindow mw)
+            {
+                bool hasOpenDocuments = mw.MdiChildren.Any(child => !child.IsDisposed && child.Visible); ;
+                mw.сохранитьToolStripMenuItem.ForeColor = !hasOpenDocuments ? Color.Gray : Color.Black;
+                mw.сохранитьКакToolStripMenuItem.ForeColor = !hasOpenDocuments ? Color.Gray : Color.Black;
+                mw.сохранитьToolStripMenuItem.Enabled = hasOpenDocuments;
+                mw.сохранитьКакToolStripMenuItem.Enabled = hasOpenDocuments;
+            }
+        }
 
-            сохранитьToolStripMenuItem.Enabled = hasOpenDocuments;
-            сохранитьКакToolStripMenuItem.Enabled = hasOpenDocuments;
+        private void MainWindow_MdiChildActivate(object sender, EventArgs e)
+        {
+            UpdateSaveCommands(this);
         }
     }
 }

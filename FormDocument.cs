@@ -57,6 +57,11 @@ namespace MDIPaint
             isMoving = true;
         }
 
+        private void FormDocument_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            MainWindow.UpdateSaveCommands(MdiParent);
+        }
+
         protected override void OnPaint(PaintEventArgs e)
         {
             if (isMoving)
