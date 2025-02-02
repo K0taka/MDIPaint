@@ -72,7 +72,7 @@
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.MdiWindowListItem = this.окноToolStripMenuItem;
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(800, 40);
+            this.menuStrip1.Size = new System.Drawing.Size(800, 42);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -163,7 +163,7 @@
             this.упорядочитьЗначкиToolStripMenuItem});
             this.окноToolStripMenuItem.Name = "окноToolStripMenuItem";
             this.окноToolStripMenuItem.Padding = new System.Windows.Forms.Padding(0);
-            this.окноToolStripMenuItem.Size = new System.Drawing.Size(76, 36);
+            this.окноToolStripMenuItem.Size = new System.Drawing.Size(76, 38);
             this.окноToolStripMenuItem.Text = "&Окно";
             // 
             // каскадToolStripMenuItem
@@ -171,6 +171,7 @@
             this.каскадToolStripMenuItem.Name = "каскадToolStripMenuItem";
             this.каскадToolStripMenuItem.Size = new System.Drawing.Size(407, 44);
             this.каскадToolStripMenuItem.Text = "&Каскад";
+            this.каскадToolStripMenuItem.Click += new System.EventHandler(this.каскадToolStripMenuItem_Click);
             // 
             // слеваНаправоToolStripMenuItem
             // 
@@ -178,6 +179,7 @@
             this.слеваНаправоToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.L)));
             this.слеваНаправоToolStripMenuItem.Size = new System.Drawing.Size(407, 44);
             this.слеваНаправоToolStripMenuItem.Text = "С&лева направо";
+            this.слеваНаправоToolStripMenuItem.Click += new System.EventHandler(this.слеваНаправоToolStripMenuItem_Click);
             // 
             // сверхуВнизToolStripMenuItem
             // 
@@ -185,12 +187,14 @@
             this.сверхуВнизToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.U)));
             this.сверхуВнизToolStripMenuItem.Size = new System.Drawing.Size(407, 44);
             this.сверхуВнизToolStripMenuItem.Text = "С&верху вниз";
+            this.сверхуВнизToolStripMenuItem.Click += new System.EventHandler(this.сверхуВнизToolStripMenuItem_Click);
             // 
             // упорядочитьЗначкиToolStripMenuItem
             // 
             this.упорядочитьЗначкиToolStripMenuItem.Name = "упорядочитьЗначкиToolStripMenuItem";
             this.упорядочитьЗначкиToolStripMenuItem.Size = new System.Drawing.Size(407, 44);
             this.упорядочитьЗначкиToolStripMenuItem.Text = "&Упорядочить значки";
+            this.упорядочитьЗначкиToolStripMenuItem.Click += new System.EventHandler(this.упорядочитьЗначкиToolStripMenuItem_Click);
             // 
             // справкаToolStripMenuItem
             // 
@@ -220,7 +224,7 @@
             this.toolStripSeparator3,
             this.toolStripWidthButton,
             this.toolStripWidthLabel});
-            this.toolStrip1.Location = new System.Drawing.Point(0, 40);
+            this.toolStrip1.Location = new System.Drawing.Point(0, 42);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(800, 36);
             this.toolStrip1.TabIndex = 1;

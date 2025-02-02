@@ -140,5 +140,33 @@ namespace MDIPaint
                 toolStripWidthLabel.Text = $"Толщина: {CurrentWidth}";
             }
         }
+
+        private void каскадToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            LayoutMdi(MdiLayout.Cascade);
+        }
+
+        private void слеваНаправоToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            LayoutMdi(MdiLayout.TileVertical);
+        }
+
+        private void сверхуВнизToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            LayoutMdi(MdiLayout.TileHorizontal);
+        }
+
+        private void упорядочитьЗначкиToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            LayoutMdi(MdiLayout.ArrangeIcons);
+        }
+
+        private void UpdateSaveCommands()
+        {
+            bool hasOpenDocuments = this.MdiChildren.Length > 0;
+
+            сохранитьToolStripMenuItem.Enabled = hasOpenDocuments;
+            сохранитьКакToolStripMenuItem.Enabled = hasOpenDocuments;
+        }
     }
 }
