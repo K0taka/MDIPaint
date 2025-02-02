@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // набора атрибутов. Измените значения этих атрибутов для изменения сведений,
 // связанных со сборкой.
 [assembly: AssemblyTitle("MDIPaint")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("MDI Paint is an app inspired by MS Paint, but upgraded with MDI improvements. Icons used from https://www.flaticon.com")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("HSE Perm")]
 [assembly: AssemblyProduct("MDIPaint")]
-[assembly: AssemblyCopyright("Copyright ©  2025")]
+[assembly: AssemblyCopyright("Copyright © K0taka 2025")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

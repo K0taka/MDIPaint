@@ -8,13 +8,137 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+
 namespace MDIPaint
 {
     public partial class MainWindow : Form
     {
+        public static Color CurrentColor { get; set; }
+        public static Color PickedColor { get; set; }
+
+        public static int CurrentWidth { get; set; }
+
         public MainWindow()
         {
             InitializeComponent();
+            CurrentColor = Color.Black;
+            PickedColor = Color.White;
+            CurrentWidth = 1;
+        }
+
+        private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var frmAbout = new FormAbout();
+            frmAbout.ShowDialog();
+        }
+
+        private void новыйToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var frmDocument = new FormDocument();
+            frmDocument.MdiParent = this;
+            frmDocument.Show();
+        }
+
+        private void toolStripButtonColorBlack_Click(object sender, EventArgs e)
+        {
+            if (!toolStripButtonColorBlack.Checked)
+            {
+                CurrentColor = Color.Black;
+                toolStripButtonColorGreen.Checked = false;
+                toolStripButtonColorRed.Checked = false;
+                toolStripButtonColorBlack.Checked = true;
+                toolStripButtonPickedColor.Checked = false;
+            }
+        }
+
+        private void toolStripButtonColorRed_Click(object sender, EventArgs e)
+        {
+            if (!toolStripButtonColorRed.Checked)
+            {
+                CurrentColor = Color.Red;
+                toolStripButtonColorBlack.Checked = false;
+                toolStripButtonColorGreen.Checked = false;
+                toolStripButtonColorRed.Checked = true;
+                toolStripButtonPickedColor.Checked = false;
+            }
+        }
+
+        private void toolStripButtonColorGreen_Click(object sender, EventArgs e)
+        {
+            if (!toolStripButtonColorGreen.Checked)
+            {
+                CurrentColor = Color.Green;
+                toolStripButtonColorBlack.Checked = false;
+                toolStripButtonColorRed.Checked = false;
+                toolStripButtonColorGreen.Checked = true;
+                toolStripButtonPickedColor.Checked = false;
+            }
+        }
+
+        private void toolStripButtonColorPicker_Click(object sender, EventArgs e)
+        {
+            var colorPicker = new ColorDialog();
+            if (colorPicker.ShowDialog() == DialogResult.OK)
+            {
+                MainWindow.CurrentColor = colorPicker.Color;
+                MainWindow.PickedColor = colorPicker.Color;
+                toolStripButtonColorBlack.Checked = false;
+                toolStripButtonColorRed.Checked = false;
+                toolStripButtonColorGreen.Checked = false;
+                toolStripButtonPickedColor.BackColor = colorPicker.Color;
+                toolStripButtonPickedColor.ForeColor = colorPicker.Color;
+                toolStripButtonPickedColor.Checked = true;
+            }
+        }
+
+        private void toolStripButtonPickedColor_Paint(object sender, PaintEventArgs e)
+        {
+            if (sender is ToolStripButton button)
+            {
+                using (Brush brush = new SolidBrush(button.BackColor))
+                {
+                    e.Graphics.FillRectangle(brush, e.ClipRectangle);
+                }
+
+                if (button.Checked)
+                {
+                    using (Pen pen = new Pen(Color.FromArgb(
+                                                            255 - MainWindow.PickedColor.R,
+                                                            255 - MainWindow.PickedColor.G,
+                                                            255 - MainWindow.PickedColor.B
+                        ), 2)) // Use a different color or thickness for the border
+                    {
+                        Rectangle borderRect = new Rectangle(e.ClipRectangle.X, e.ClipRectangle.Y, e.ClipRectangle.Width - 1, e.ClipRectangle.Height - 1);
+                        e.Graphics.DrawRectangle(pen, borderRect);
+                    }
+                }
+            }
+        }
+
+        private void toolStripButtonPickedColor_Click(object sender, EventArgs e)
+        {
+            if (!toolStripButtonPickedColor.Checked)
+            {
+                CurrentColor = MainWindow.PickedColor;
+                toolStripButtonColorBlack.Checked = false;
+                toolStripButtonColorRed.Checked = false;
+                toolStripButtonColorGreen.Checked = false;
+                toolStripButtonPickedColor.Checked = true;
+            }
+        }
+
+        private void toolStripWidthButton_Click(object sender, EventArgs e)
+        {
+            var widthPicker = new FormWidthPicker();
+            var lastWidth = MainWindow.CurrentWidth;
+            if (widthPicker.ShowDialog() != DialogResult.OK)
+            {
+                MainWindow.CurrentWidth = lastWidth;
+            }
+            else
+            {
+                toolStripWidthLabel.Text = $"Толщина: {CurrentWidth}";
+            }
         }
     }
 }
