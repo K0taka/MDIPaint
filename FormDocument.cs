@@ -60,6 +60,12 @@ namespace MDIPaint
         private void FormDocument_FormClosed(object sender, FormClosedEventArgs e)
         {
             MainWindow.UpdateSaveCommands(MdiParent);
+            MainWindow.UpdateWindowCommands(MdiParent);
+        }
+
+        private void FormDocument_Resize(object sender, EventArgs e)
+        {
+            MainWindow.UpdateWindowCommands(MdiParent);
         }
 
         protected override void OnPaint(PaintEventArgs e)

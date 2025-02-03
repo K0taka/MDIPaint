@@ -25,6 +25,7 @@ namespace MDIPaint
             PickedColor = Color.White;
             CurrentWidth = 1;
             UpdateSaveCommands(this);
+            UpdateWindowCommands(this);
         }
 
         private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
@@ -168,7 +169,7 @@ namespace MDIPaint
         {
             if (form is MainWindow mw)
             {
-                bool hasOpenDocuments = mw.MdiChildren.Any(child => !child.IsDisposed && child.Visible); ;
+                bool hasOpenDocuments = mw.MdiChildren.Any(child => !child.IsDisposed && child.Visible);
                 mw.сохранитьToolStripMenuItem.ForeColor = !hasOpenDocuments ? Color.Gray : Color.Black;
                 mw.сохранитьКакToolStripMenuItem.ForeColor = !hasOpenDocuments ? Color.Gray : Color.Black;
                 mw.сохранитьToolStripMenuItem.Enabled = hasOpenDocuments;
@@ -179,6 +180,27 @@ namespace MDIPaint
         private void MainWindow_MdiChildActivate(object sender, EventArgs e)
         {
             UpdateSaveCommands(this);
+            UpdateWindowCommands(this);
+        }
+
+        public static void UpdateWindowCommands(Form form)
+        {
+            if (form is MainWindow mw)
+            {
+                bool hasOpenDocuments = mw.MdiChildren.Any(child => !child.IsDisposed && child.Visible);
+                bool hasMinimizedWindows = mw.MdiChildren.Any(window => window.WindowState == FormWindowState.Minimized);
+                bool hasNonMinimizedWindows = mw.MdiChildren.Any(window => window.WindowState != FormWindowState.Minimized);
+
+                mw.каскадToolStripMenuItem.Enabled = hasOpenDocuments && hasNonMinimizedWindows;
+                mw.слеваНаправоToolStripMenuItem.Enabled = hasOpenDocuments && hasNonMinimizedWindows;
+                mw.сверхуВнизToolStripMenuItem.Enabled = hasOpenDocuments && hasNonMinimizedWindows;
+                mw.упорядочитьЗначкиToolStripMenuItem.Enabled = hasOpenDocuments && hasMinimizedWindows;
+
+                mw.каскадToolStripMenuItem.ForeColor = hasOpenDocuments && hasNonMinimizedWindows ? Color.Black : Color.Gray;
+                mw.слеваНаправоToolStripMenuItem.ForeColor = hasOpenDocuments && hasNonMinimizedWindows ? Color.Black : Color.Gray;
+                mw.сверхуВнизToolStripMenuItem.ForeColor = hasOpenDocuments && hasNonMinimizedWindows ? Color.Black : Color.Gray;
+                mw.упорядочитьЗначкиToolStripMenuItem.ForeColor = hasOpenDocuments && hasMinimizedWindows ? Color.Black : Color.Gray;
+            }
         }
     }
 }

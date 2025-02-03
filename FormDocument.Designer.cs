@@ -44,6 +44,7 @@
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FormDocument_MouseDown);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.FormDocument_MouseMove);
             this.Move += new System.EventHandler(this.FormDocument_Move);
+            this.Resize += new System.EventHandler(this.FormDocument_Resize);
             this.ResumeLayout(false);
 
         }
