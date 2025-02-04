@@ -202,5 +202,74 @@ namespace MDIPaint
                 mw.упорядочитьЗначкиToolStripMenuItem.ForeColor = hasOpenDocuments && hasMinimizedWindows ? Color.Black : Color.Gray;
             }
         }
+
+        private void сохранитьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FormDocument.Save(ActiveMdiChild);
+        }
+
+        private void сохранитьКакToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FormDocument.SaveAs(ActiveMdiChild);
+        }
+
+        private void открытьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFile();
+        }
+        private void OpenFile()
+        {
+            using (OpenFileDialog openDialog = new OpenFileDialog())
+            {
+                // Настройка фильтров
+                openDialog.Filter = "Изображения (*.bmp;*.jpg;*.jpeg)|*.bmp;*.jpg;*.jpeg|Все файлы (*.*)|*.*";
+                openDialog.FilterIndex = 1;
+                openDialog.Title = "Открыть изображение";
+
+                if (openDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        // Создаем новый документ и загружаем изображение
+                        FormDocument doc = new FormDocument(openDialog.FileName);
+                        doc.MdiParent = this;
+                        doc.Show();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Ошибка при открытии файла: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+
+        private void выходToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void размерХолстаToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (ActiveMdiChild is FormDocument docForm)
+            {
+                int currentWidth = docForm.Width;
+                int currentHeight = docForm.Height;
+
+                using (var dialog = new FormResize(currentHeight, currentWidth))
+                {
+                    if (dialog.ShowDialog() == DialogResult.OK)
+                    {
+                        try
+                        {
+                            docForm.ResizeCanvas(dialog.Width, dialog.Height);
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

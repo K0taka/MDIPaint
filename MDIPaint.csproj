@@ -58,6 +58,12 @@
     <Compile Include="FormDocument.Designer.cs">
       <DependentUpon>FormDocument.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormResize.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormResize.Designer.cs">
+      <DependentUpon>FormResize.cs</DependentUpon>
+    </Compile>
     <Compile Include="MainWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -77,6 +83,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FormDocument.resx">
       <DependentUpon>FormDocument.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormResize.resx">
+      <DependentUpon>FormResize.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainWindow.resx">
       <DependentUpon>MainWindow.cs</DependentUpon>
