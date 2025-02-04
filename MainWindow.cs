@@ -15,6 +15,7 @@ namespace MDIPaint
     {
         public static Color CurrentColor { get; set; }
         public static Color PickedColor { get; set; }
+        public static Brushes CurrentBrush { get; private set; }
 
         public static int CurrentWidth { get; set; }
 
@@ -23,6 +24,7 @@ namespace MDIPaint
             InitializeComponent();
             CurrentColor = Color.Black;
             PickedColor = Color.White;
+            CurrentBrush = Brushes.Brush;
             CurrentWidth = 1;
             UpdateSaveCommands(this);
             UpdateWindowCommands(this);
@@ -38,7 +40,7 @@ namespace MDIPaint
         {
             var frmDocument = new FormDocument();
             frmDocument.MdiParent = this;
-            frmDocument.StartPosition = FormStartPosition.Manual;
+            frmDocument.StartPosition = FormStartPosition.WindowsDefaultLocation;
             frmDocument.Show();
         }
 
@@ -109,7 +111,7 @@ namespace MDIPaint
                                                             255 - MainWindow.PickedColor.R,
                                                             255 - MainWindow.PickedColor.G,
                                                             255 - MainWindow.PickedColor.B
-                        ), 2)) // Use a different color or thickness for the border
+                        ), 2))
                     {
                         Rectangle borderRect = new Rectangle(e.ClipRectangle.X, e.ClipRectangle.Y, e.ClipRectangle.Width - 1, e.ClipRectangle.Height - 1);
                         e.Graphics.DrawRectangle(pen, borderRect);
@@ -269,6 +271,66 @@ namespace MDIPaint
                         }
                     }
                 }
+            }
+        }
+
+        private void toolStripButtonBrush_Click(object sender, EventArgs e)
+        {
+            if (CurrentBrush != Brushes.Brush)
+            {
+                CurrentBrush = Brushes.Brush;
+                toolStripButtonLine.Checked = false;
+                toolStripButtonEllipse.Checked = false;
+                toolStripButtonEraser.Checked = false;
+                toolStripButtonCallout.Checked = false;
+            }
+        }
+
+        private void toolStripButtonLine_Click(object sender, EventArgs e)
+        {
+            if (CurrentBrush != Brushes.Line)
+            {
+                CurrentBrush = Brushes.Line;
+                toolStripButtonBrush.Checked = false;
+                toolStripButtonEllipse.Checked = false;
+                toolStripButtonEraser.Checked = false;
+                toolStripButtonCallout.Checked = false;
+            }
+        }
+
+        private void toolStripButtonEllipse_Click(object sender, EventArgs e)
+        {
+            if (CurrentBrush != Brushes.Ellipse)
+            {
+                CurrentBrush = Brushes.Ellipse;
+                toolStripButtonBrush.Checked = false;
+                toolStripButtonLine.Checked = false;
+                toolStripButtonEraser.Checked = false;
+                toolStripButtonCallout.Checked = false;
+            }
+        }
+
+        private void toolStripButtonEraser_Click(object sender, EventArgs e)
+        {
+            if (CurrentBrush != Brushes.Eraser)
+            {
+                CurrentBrush = Brushes.Eraser;
+                toolStripButtonBrush.Checked = false;
+                toolStripButtonLine.Checked = false;
+                toolStripButtonEllipse.Checked = false;
+                toolStripButtonCallout.Checked = false;
+            }
+        }
+
+        private void toolStripButtonCallout_Click(object sender, EventArgs e)
+        {
+            if (CurrentBrush != Brushes.Callout)
+            {
+                CurrentBrush = Brushes.Eraser;
+                toolStripButtonBrush.Checked = false;
+                toolStripButtonLine.Checked = false;
+                toolStripButtonEllipse.Checked = false;
+                toolStripButtonEraser.Checked = false;
             }
         }
     }

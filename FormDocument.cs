@@ -14,11 +14,16 @@ namespace MDIPaint
 {
     public partial class FormDocument : Form
     {
-        int oldX, oldY;
-        Bitmap bitmap = new Bitmap(400, 400);
+        static int created = 1;
+
+        Point start;
+        Point end;
+        Bitmap bitmap = new Bitmap(800, 800);
         bool isMoving = false;
-        private string filePath = null;
-        private bool isSaved = false;
+        string filePath = null;
+        bool isSaved = false;
+        bool isDrawing = false;
+        Bitmap drawingBitmap = null;
 
         public int Width { get { return bitmap.Width; } }
         public int Height { get { return bitmap.Height; } }
@@ -29,7 +34,7 @@ namespace MDIPaint
             bitmap = new Bitmap(400, 400);
             ClearBitmap();
             InitializeDocument();
-            Text = "Новый";
+            Text = $"Новый {created++}";
         }
 
         public FormDocument(string filePath)
@@ -86,22 +91,39 @@ namespace MDIPaint
         {
             if (e.Button == MouseButtons.Left)
             {
-                oldX = e.X;
-                oldY = e.Y;
+                start = AdjustForScroll(e.Location);
+                isDrawing = true;
+                drawingBitmap = (Bitmap)bitmap.Clone();
             }
         }
 
         private void FormDocument_MouseMove(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left)
+            if (isDrawing)
             {
-                int scrollX = this.AutoScrollPosition.X;
-                int scrollY = this.AutoScrollPosition.Y;
+                end = AdjustForScroll(e.Location);
+                if (MainWindow.CurrentBrush == Brushes.Brush)
+                {
+                    // Рисуем линию на основном холсте
+                    using (var g = Graphics.FromImage(bitmap))
+                    {
+                        DrawLine(g, start, end, MainWindow.CurrentColor, MainWindow.CurrentWidth);
+                    }
 
-                var g = Graphics.FromImage(bitmap);
-                g.DrawLine(new Pen(MainWindow.CurrentColor, MainWindow.CurrentWidth), oldX - scrollX, oldY - scrollY, e.X - scrollX, e.Y - scrollY); oldX = e.X;
-                oldY = e.Y;
+                    // Обновляем начальную точку для следующего отрезка
+                    start = end;
+                }
+                else if (MainWindow.CurrentBrush == Brushes.Eraser)
+                {
+                    // Стираем изображение
+                    using (var g = Graphics.FromImage(bitmap))
+                    {
+                        Erase(g, end, MainWindow.CurrentWidth);
+                    }
 
+                    // Обновляем начальную точку для следующего отрезка
+                    start = end;
+                }
                 Invalidate();
             }
         }
@@ -133,10 +155,18 @@ namespace MDIPaint
             if (isMoving)
                 return;
             base.OnPaint(e);
+            e.Graphics.DrawImage(bitmap, this.AutoScrollPosition);
 
-            int scrollX = this.AutoScrollPosition.X;
-            int scrollY = this.AutoScrollPosition.Y;
-            e.Graphics.DrawImage(bitmap, scrollX, scrollY);
+            if (isDrawing && drawingBitmap != null && MainWindow.CurrentBrush != Brushes.Brush && MainWindow.CurrentBrush != Brushes.Eraser)
+            {
+                using (var g = Graphics.FromImage(drawingBitmap))
+                {
+                    g.Clear(Color.White);
+                    g.DrawImage(bitmap, Point.Empty);
+                    DrawPreview(g);
+                }
+                e.Graphics.DrawImage(drawingBitmap, this.AutoScrollPosition);
+            }
         }
 
         public static void SaveAs(Form fm)
@@ -177,7 +207,6 @@ namespace MDIPaint
             {
                 if (string.IsNullOrEmpty(fd.filePath) || !fd.isSaved)
                 {
-                    // Если файл не сохранен ранее, вызываем "Сохранить как…"
                     SaveAs(fd);
                 }
                 else
@@ -221,6 +250,125 @@ namespace MDIPaint
             bitmap = newBitmap;
             AutoScrollMinSize = new Size(newWidth, newHeight);
             Invalidate();
+        }
+
+        private void FormDocument_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left && isDrawing)
+            {
+                end = AdjustForScroll(e.Location);
+                isDrawing = false;
+
+                // Рисуем фигуру на основном холсте
+                using (var g = Graphics.FromImage(bitmap))
+                {
+                    DrawFinalShape(g);
+                }
+
+                drawingBitmap?.Dispose();
+                drawingBitmap = null;
+                Invalidate();
+            }
+        }
+
+        private Point AdjustForScroll(Point point)
+        {
+            return new Point(
+                point.X - this.AutoScrollPosition.X,
+                point.Y - this.AutoScrollPosition.Y
+            );
+        }
+
+        private void DrawPreview(Graphics g)
+        {
+            switch (MainWindow.CurrentBrush)
+            {
+                case Brushes.Line:
+                    DrawLine(g, start, end, MainWindow.CurrentColor, MainWindow.CurrentWidth);
+                    break;
+                case Brushes.Ellipse:
+                    DrawEllipsePreview(g, start, end, MainWindow.CurrentColor, MainWindow.CurrentWidth);
+                    break;
+
+            }
+        }
+
+        private void DrawFinalShape(Graphics g)
+        {
+            switch (MainWindow.CurrentBrush)
+            {
+                case Brushes.Line:
+                    DrawLine(g, start, end, MainWindow.CurrentColor, MainWindow.CurrentWidth);
+                    break;
+                case Brushes.Ellipse:
+                    DrawEllipse(g, start, end, MainWindow.CurrentColor, MainWindow.CurrentWidth);
+                    break;
+            }
+        }
+        private void DrawLine(Graphics g, Point start, Point end, Color color, float width)
+        {
+            using (var pen = new Pen(color, width))
+            {
+                pen.StartCap = System.Drawing.Drawing2D.LineCap.Round;
+                pen.EndCap = System.Drawing.Drawing2D.LineCap.Round;
+                pen.LineJoin = System.Drawing.Drawing2D.LineJoin.Round;
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                g.DrawLine(pen, start, end);
+            }
+        }
+
+        private void FormDocument_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape && isDrawing && Brushes.Brush != MainWindow.CurrentBrush)
+            {
+                isDrawing = false;
+                drawingBitmap?.Dispose();
+                drawingBitmap = null;
+                Invalidate();
+            }
+        }
+
+        private void DrawEllipsePreview(Graphics g, Point start, Point end, Color color, float width)
+        {
+            using (var pen = new Pen(color, width))
+            {
+                var rect = GetEllipseRectangle(start, end);
+                g.DrawEllipse(pen, rect);
+            }
+        }
+
+        private void DrawEllipse(Graphics g, Point start, Point end, Color color, float width)
+        {
+            using (var pen = new Pen(color, width))
+            {
+                pen.StartCap = System.Drawing.Drawing2D.LineCap.Round;
+                pen.EndCap = System.Drawing.Drawing2D.LineCap.Round;
+                var rect = GetEllipseRectangle(start, end);
+                g.DrawEllipse(pen, rect);
+            }
+        }
+
+        private Rectangle GetEllipseRectangle(Point start, Point end)
+        {
+            int x = Math.Min(start.X, end.X);
+            int y = Math.Min(start.Y, end.Y);
+            int width = Math.Abs(start.X - end.X);
+            int height = Math.Abs(start.Y - end.Y);
+            return new Rectangle(x, y, width, height);
+        }
+
+        private void Erase(Graphics g, Point center, float size)
+        {
+            using (var brush = new SolidBrush(Color.White)) // Заливаем белым цветом
+            {
+                // Вычисляем координаты квадрата
+                float halfSize = size / 2;
+                float x = center.X - halfSize;
+                float y = center.Y - halfSize;
+
+                // Заливаем квадратную область
+                g.FillRectangle(brush, x, y, size, size);
+            }
         }
     }
 }

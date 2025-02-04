@@ -22,6 +22,7 @@ namespace MDIPaint
             InitializeComponent();
             numericUpDownX.Value = w;
             numericUpDownY.Value = h;
+            StartPosition = FormStartPosition.CenterParent;
         }
 
         private void buttonOK_Click(object sender, EventArgs e)

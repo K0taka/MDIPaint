@@ -41,8 +41,10 @@
             this.Text = "FormDocument";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FormDocument_FormClosed);
             this.LocationChanged += new System.EventHandler(this.FormDocument_LocationChanged);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.FormDocument_KeyDown);
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FormDocument_MouseDown);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.FormDocument_MouseMove);
+            this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.FormDocument_MouseUp);
             this.Move += new System.EventHandler(this.FormDocument_Move);
             this.Resize += new System.EventHandler(this.FormDocument_Resize);
             this.ResumeLayout(false);
