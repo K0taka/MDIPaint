@@ -13,11 +13,15 @@ namespace MDIPaint
 {
     public partial class MainWindow : Form
     {
-        public static Color CurrentColor { get; set; }
-        public static Color PickedColor { get; set; }
+        public static Color CurrentColor { get; private set; }
+        public static Color PickedColor { get; private set; }
         public static Brushes CurrentBrush { get; private set; }
-
+        public static bool IsFilled { get; private set; }
         public static int CurrentWidth { get; set; }
+        public static Cursor  BrushCursor { get; private set; }
+        public static Cursor EraserCursor { get; private set; }
+        public static Cursor LineCursor { get; private set; }
+        public static Cursor EllipseCursor { get; private set; }
 
         public MainWindow()
         {
@@ -28,6 +32,16 @@ namespace MDIPaint
             CurrentWidth = 1;
             UpdateSaveCommands(this);
             UpdateWindowCommands(this);
+            IsFilled = false;
+            LoadCursors();
+        }
+
+        private void LoadCursors()
+        {
+            BrushCursor = Cursors.Cross;
+            EraserCursor = CursorLoad.LoadCursorFromResource("MDIPaint.Eraser.cur");
+            LineCursor = CursorLoad.LoadCursorFromResource("MDIPaint.Line.cur");
+            EllipseCursor = CursorLoad.LoadCursorFromResource("MDIPaint.Ellipse.cur");
         }
 
         private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
@@ -239,7 +253,7 @@ namespace MDIPaint
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Ошибка при открытии файла: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(this, $"Ошибка при открытии файла: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -267,7 +281,7 @@ namespace MDIPaint
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show(this, ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                 }
@@ -280,7 +294,6 @@ namespace MDIPaint
             {
                 CurrentBrush = Brushes.Brush;
                 toolStripButtonLine.Checked = false;
-                toolStripButtonEllipse.Checked = false;
                 toolStripButtonEraser.Checked = false;
                 toolStripButtonCallout.Checked = false;
             }
@@ -292,13 +305,12 @@ namespace MDIPaint
             {
                 CurrentBrush = Brushes.Line;
                 toolStripButtonBrush.Checked = false;
-                toolStripButtonEllipse.Checked = false;
                 toolStripButtonEraser.Checked = false;
                 toolStripButtonCallout.Checked = false;
             }
         }
 
-        private void toolStripButtonEllipse_Click(object sender, EventArgs e)
+        private void Ellipse_Click(object sender, EventArgs e)
         {
             if (CurrentBrush != Brushes.Ellipse)
             {
@@ -317,7 +329,6 @@ namespace MDIPaint
                 CurrentBrush = Brushes.Eraser;
                 toolStripButtonBrush.Checked = false;
                 toolStripButtonLine.Checked = false;
-                toolStripButtonEllipse.Checked = false;
                 toolStripButtonCallout.Checked = false;
             }
         }
@@ -329,9 +340,19 @@ namespace MDIPaint
                 CurrentBrush = Brushes.Eraser;
                 toolStripButtonBrush.Checked = false;
                 toolStripButtonLine.Checked = false;
-                toolStripButtonEllipse.Checked = false;
                 toolStripButtonEraser.Checked = false;
             }
+        }
+
+        private void обычныйToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Ellipse_Click(sender, e);
+        }
+
+        private void залитыйToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            IsFilled = !IsFilled;
+            Ellipse_Click(sender, e);
         }
     }
 }

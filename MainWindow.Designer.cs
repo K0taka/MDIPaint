@@ -59,9 +59,14 @@
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripButtonBrush = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonLine = new System.Windows.Forms.ToolStripButton();
-            this.toolStripButtonEllipse = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonEraser = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonCallout = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripButtonEllipse = new System.Windows.Forms.ToolStripDropDownButton();
+            this.обычныйToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.залитыйToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -219,7 +224,7 @@
             // 
             this.оПрограммеToolStripMenuItem.Name = "оПрограммеToolStripMenuItem";
             this.оПрограммеToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F1;
-            this.оПрограммеToolStripMenuItem.Size = new System.Drawing.Size(350, 44);
+            this.оПрограммеToolStripMenuItem.Size = new System.Drawing.Size(359, 44);
             this.оПрограммеToolStripMenuItem.Text = "О &программе...";
             this.оПрограммеToolStripMenuItem.Click += new System.EventHandler(this.оПрограммеToolStripMenuItem_Click);
             // 
@@ -237,10 +242,13 @@
             this.toolStripWidthLabel,
             this.toolStripSeparator4,
             this.toolStripButtonBrush,
-            this.toolStripButtonLine,
-            this.toolStripButtonEllipse,
             this.toolStripButtonEraser,
-            this.toolStripButtonCallout});
+            this.toolStripButtonLine,
+            this.toolStripSeparator5,
+            this.toolStripButtonEllipse,
+            this.toolStripButtonCallout,
+            this.toolStripSeparator7,
+            this.toolStripSeparator6});
             this.toolStrip1.Location = new System.Drawing.Point(0, 40);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(800, 42);
@@ -368,17 +376,6 @@
             this.toolStripButtonLine.Text = "Линия";
             this.toolStripButtonLine.Click += new System.EventHandler(this.toolStripButtonLine_Click);
             // 
-            // toolStripButtonEllipse
-            // 
-            this.toolStripButtonEllipse.CheckOnClick = true;
-            this.toolStripButtonEllipse.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButtonEllipse.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonEllipse.Image")));
-            this.toolStripButtonEllipse.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripButtonEllipse.Name = "toolStripButtonEllipse";
-            this.toolStripButtonEllipse.Size = new System.Drawing.Size(46, 36);
-            this.toolStripButtonEllipse.Text = "Эллипс";
-            this.toolStripButtonEllipse.Click += new System.EventHandler(this.toolStripButtonEllipse_Click);
-            // 
             // toolStripButtonEraser
             // 
             this.toolStripButtonEraser.CheckOnClick = true;
@@ -400,6 +397,48 @@
             this.toolStripButtonCallout.Size = new System.Drawing.Size(46, 36);
             this.toolStripButtonCallout.Text = "Выноска";
             this.toolStripButtonCallout.Click += new System.EventHandler(this.toolStripButtonCallout_Click);
+            // 
+            // toolStripSeparator5
+            // 
+            this.toolStripSeparator5.Name = "toolStripSeparator5";
+            this.toolStripSeparator5.Size = new System.Drawing.Size(6, 42);
+            // 
+            // toolStripSeparator6
+            // 
+            this.toolStripSeparator6.Name = "toolStripSeparator6";
+            this.toolStripSeparator6.Size = new System.Drawing.Size(6, 42);
+            // 
+            // toolStripSeparator7
+            // 
+            this.toolStripSeparator7.Name = "toolStripSeparator7";
+            this.toolStripSeparator7.Size = new System.Drawing.Size(6, 42);
+            // 
+            // toolStripButtonEllipse
+            // 
+            this.toolStripButtonEllipse.BackColor = System.Drawing.SystemColors.Control;
+            this.toolStripButtonEllipse.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripButtonEllipse.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.обычныйToolStripMenuItem,
+            this.залитыйToolStripMenuItem});
+            this.toolStripButtonEllipse.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonEllipse.Image")));
+            this.toolStripButtonEllipse.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButtonEllipse.Name = "toolStripButtonEllipse";
+            this.toolStripButtonEllipse.Size = new System.Drawing.Size(54, 36);
+            this.toolStripButtonEllipse.Text = "Эллипс";
+            // 
+            // обычныйToolStripMenuItem
+            // 
+            this.обычныйToolStripMenuItem.Name = "обычныйToolStripMenuItem";
+            this.обычныйToolStripMenuItem.Size = new System.Drawing.Size(359, 44);
+            this.обычныйToolStripMenuItem.Text = "Обычный";
+            this.обычныйToolStripMenuItem.Click += new System.EventHandler(this.обычныйToolStripMenuItem_Click);
+            // 
+            // залитыйToolStripMenuItem
+            // 
+            this.залитыйToolStripMenuItem.Name = "залитыйToolStripMenuItem";
+            this.залитыйToolStripMenuItem.Size = new System.Drawing.Size(359, 44);
+            this.залитыйToolStripMenuItem.Text = "Залитый";
+            this.залитыйToolStripMenuItem.Click += new System.EventHandler(this.залитыйToolStripMenuItem_Click);
             // 
             // MainWindow
             // 
@@ -453,9 +492,14 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripButton toolStripButtonBrush;
         private System.Windows.Forms.ToolStripButton toolStripButtonLine;
-        private System.Windows.Forms.ToolStripButton toolStripButtonEllipse;
         private System.Windows.Forms.ToolStripButton toolStripButtonEraser;
         private System.Windows.Forms.ToolStripButton toolStripButtonCallout;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
+        private System.Windows.Forms.ToolStripDropDownButton toolStripButtonEllipse;
+        private System.Windows.Forms.ToolStripMenuItem обычныйToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem залитыйToolStripMenuItem;
     }
 }
 

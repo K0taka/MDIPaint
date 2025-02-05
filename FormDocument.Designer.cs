@@ -39,6 +39,7 @@
             this.DoubleBuffered = true;
             this.Name = "FormDocument";
             this.Text = "FormDocument";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormDocument_FormClosing);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FormDocument_FormClosed);
             this.LocationChanged += new System.EventHandler(this.FormDocument_LocationChanged);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.FormDocument_KeyDown);

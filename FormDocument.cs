@@ -15,10 +15,10 @@ namespace MDIPaint
     public partial class FormDocument : Form
     {
         static int created = 1;
-
+        bool isModed = false;
         Point start;
         Point end;
-        Bitmap bitmap = new Bitmap(800, 800);
+        Bitmap bitmap;
         bool isMoving = false;
         string filePath = null;
         bool isSaved = false;
@@ -31,7 +31,7 @@ namespace MDIPaint
         public FormDocument()
         {
             InitializeComponent();
-            bitmap = new Bitmap(400, 400);
+            bitmap = new Bitmap(800, 800);
             ClearBitmap();
             InitializeDocument();
             Text = $"Новый {created++}";
@@ -57,24 +57,33 @@ namespace MDIPaint
         {
             try
             {
-                using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read))
+                using (var tempImage = Image.FromFile(path))
                 {
-                    bitmap = new Bitmap(stream);
+                    if (tempImage.Width > 5000 || tempImage.Height > 5000)
+                    {
+                        throw new ArgumentException("Изображение слишком большое.");
+                    }
+
+                    // Создаем новый Bitmap из загруженного изображения
+                    bitmap = new Bitmap(tempImage);
                 }
             }
             catch (ArgumentException)
             {
-                MessageBox.Show("Файл не является изображением.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                var parent = MdiParent as MainWindow;
+                MessageBox.Show(parent, "Файл не является изображением.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Close();
             }
             catch (IOException)
             {
-                MessageBox.Show("Файл занят другим процессом.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                var parent = MdiParent as MainWindow;
+                MessageBox.Show(parent, "Файл занят другим процессом.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Close();
             }
             catch
             {
-                MessageBox.Show("Невозможно открыть файл.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                var parent = MdiParent as MainWindow;
+                MessageBox.Show(parent, "Невозможно открыть файл.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Close();
             }
         }
@@ -89,10 +98,14 @@ namespace MDIPaint
 
         private void FormDocument_MouseDown(object sender, MouseEventArgs e)
         {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
             if (e.Button == MouseButtons.Left)
             {
+                MarkAsModified();
                 start = AdjustForScroll(e.Location);
                 isDrawing = true;
+                drawingBitmap?.Dispose();
                 drawingBitmap = (Bitmap)bitmap.Clone();
             }
         }
@@ -125,6 +138,34 @@ namespace MDIPaint
                     start = end;
                 }
                 Invalidate();
+            }
+
+            int x = e.X - this.AutoScrollPosition.X;
+            int y = e.Y - this.AutoScrollPosition.Y;
+            if (x >= 0 && x < bitmap.Width && y >= 0 && y < bitmap.Height)
+            {
+                switch (MainWindow.CurrentBrush)
+                {
+                    case Brushes.Brush:
+                        this.Cursor = MainWindow.BrushCursor;
+                        break;
+                    case Brushes.Eraser:
+                        this.Cursor = MainWindow.EraserCursor;
+                        break;
+                    case Brushes.Line:
+                        this.Cursor = MainWindow.LineCursor;
+                        break;
+                    case Brushes.Ellipse:
+                        this.Cursor = MainWindow.EllipseCursor;
+                        break;
+                    default:
+                        this.Cursor = Cursors.Default;
+                        break;
+                }
+            }
+            else
+            {
+                this.Cursor = Cursors.Default;
             }
         }
 
@@ -193,6 +234,7 @@ namespace MDIPaint
                         // Обновляем путь и состояние
                         fd.filePath = saveDialog.FileName;
                         fd.isSaved = true;
+                        fd.isModed = false;
 
                         // Обновляем заголовок окна
                         fd.Text = Path.GetFileName(fd.filePath);
@@ -228,6 +270,8 @@ namespace MDIPaint
                     }
 
                     fd.bitmap.Save(fd.filePath, format);
+                    fd.isModed = false;
+                    fd.Text = Path.GetFileName(fd.filePath);
                 }
             }
         }
@@ -330,21 +374,48 @@ namespace MDIPaint
 
         private void DrawEllipsePreview(Graphics g, Point start, Point end, Color color, float width)
         {
-            using (var pen = new Pen(color, width))
+            var rect = GetEllipseRectangle(start, end);
+
+            if (MainWindow.IsFilled)
             {
-                var rect = GetEllipseRectangle(start, end);
-                g.DrawEllipse(pen, rect);
+                // Рисуем закрашенный эллипс для предпросмотра
+                using (var brush = new SolidBrush(Color.FromArgb(128, color))) // Полупрозрачный цвет
+                {
+                    g.FillEllipse(brush, rect);
+                }
+            }
+            else
+            {
+                // Рисуем только контур для предпросмотра
+                using (var pen = new Pen(color, width))
+                {
+                    pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash; // Пунктир для предпросмотра
+                    g.DrawEllipse(pen, rect);
+                }
             }
         }
 
         private void DrawEllipse(Graphics g, Point start, Point end, Color color, float width)
         {
-            using (var pen = new Pen(color, width))
+            var rect = GetEllipseRectangle(start, end);
+
+            if (MainWindow.IsFilled)
             {
-                pen.StartCap = System.Drawing.Drawing2D.LineCap.Round;
-                pen.EndCap = System.Drawing.Drawing2D.LineCap.Round;
-                var rect = GetEllipseRectangle(start, end);
-                g.DrawEllipse(pen, rect);
+                // Рисуем закрашенный эллипс
+                using (var brush = new SolidBrush(color))
+                {
+                    g.FillEllipse(brush, rect);
+                }
+            }
+            else
+            {
+                // Рисуем только контур
+                using (var pen = new Pen(color, width))
+                {
+                    pen.StartCap = System.Drawing.Drawing2D.LineCap.Round;
+                    pen.EndCap = System.Drawing.Drawing2D.LineCap.Round;
+                    g.DrawEllipse(pen, rect);
+                }
             }
         }
 
@@ -369,6 +440,46 @@ namespace MDIPaint
                 // Заливаем квадратную область
                 g.FillRectangle(brush, x, y, size, size);
             }
+        }
+        private void MarkAsModified()
+        {
+            if (!isModed)
+            {
+                isModed = true;
+                this.Text += "*"; // Добавляем звездочку к заголовку
+            }
+        }
+
+        private void FormDocument_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            DialogResult result;
+            if (isModed)
+            {
+                var parent = MdiParent as MainWindow;
+                result = MessageBox.Show(
+                    parent,
+                    $"Сохранить изменения в файле {this.Text.TrimEnd('*')}?",
+                    "Сохранение",
+                    MessageBoxButtons.YesNoCancel,
+                    MessageBoxIcon.Warning,
+                    MessageBoxDefaultButton.Button1
+                );
+
+                switch (result)
+                {
+                    case DialogResult.Yes:
+                        Save(this); // Сохраняем файл
+                        break;
+                    case DialogResult.No:
+                        // Закрываем без сохранения
+                        break;
+                    case DialogResult.Cancel:
+                        e.Cancel = true; // Отменяем закрытие
+                        return;
+                }
+            }
+            bitmap?.Dispose();
+            bitmap = null;
         }
     }
 }
