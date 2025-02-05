@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 
@@ -18,7 +13,7 @@ namespace MDIPaint
         public static Brushes CurrentBrush { get; private set; }
         public static bool IsFilled { get; private set; }
         public static int CurrentWidth { get; set; }
-        public static Cursor  BrushCursor { get; private set; }
+        public static Cursor BrushCursor { get; private set; }
         public static Cursor EraserCursor { get; private set; }
         public static Cursor LineCursor { get; private set; }
         public static Cursor EllipseCursor { get; private set; }
