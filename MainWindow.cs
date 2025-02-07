@@ -246,9 +246,9 @@ namespace MDIPaint
                         doc.MdiParent = this;
                         doc.Show();
                     }
-                    catch (Exception ex)
+                    catch //(Exception ex)
                     {
-                        MessageBox.Show(this, $"Ошибка при открытии файла: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        //MessageBox.Show(this, $"Ошибка при открытии файла: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -290,7 +290,7 @@ namespace MDIPaint
                 CurrentBrush = Brushes.Brush;
                 toolStripButtonLine.Checked = false;
                 toolStripButtonEraser.Checked = false;
-                toolStripButtonCallout.Checked = false;
+
             }
         }
 
@@ -301,7 +301,7 @@ namespace MDIPaint
                 CurrentBrush = Brushes.Line;
                 toolStripButtonBrush.Checked = false;
                 toolStripButtonEraser.Checked = false;
-                toolStripButtonCallout.Checked = false;
+
             }
         }
 
@@ -313,7 +313,7 @@ namespace MDIPaint
                 toolStripButtonBrush.Checked = false;
                 toolStripButtonLine.Checked = false;
                 toolStripButtonEraser.Checked = false;
-                toolStripButtonCallout.Checked = false;
+
             }
         }
 
@@ -324,7 +324,7 @@ namespace MDIPaint
                 CurrentBrush = Brushes.Eraser;
                 toolStripButtonBrush.Checked = false;
                 toolStripButtonLine.Checked = false;
-                toolStripButtonCallout.Checked = false;
+
             }
         }
 
@@ -348,6 +348,22 @@ namespace MDIPaint
         {
             IsFilled = !IsFilled;
             Ellipse_Click(sender, e);
+        }
+
+        private void toolStripButtonSizeUp_Click(object sender, EventArgs e)
+        {
+            if (ActiveMdiChild is FormDocument doc)
+            {
+                doc.ZoomIn();
+            }
+        }
+
+        private void toolStripButtonSizeDown_Click(object sender, EventArgs e)
+        {
+            if (ActiveMdiChild is FormDocument doc)
+            {
+                doc.ZoomOut();
+            }
         }
     }
 }

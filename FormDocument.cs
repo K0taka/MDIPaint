@@ -18,6 +18,8 @@ namespace MDIPaint
         bool isSaved = false;
         bool isDrawing = false;
         Bitmap drawingBitmap = null;
+        float scaleSize = 1;
+        Size baseSize;
 
         public int Width { get { return bitmap.Width; } }
         public int Height { get { return bitmap.Height; } }
@@ -25,7 +27,8 @@ namespace MDIPaint
         public FormDocument()
         {
             InitializeComponent();
-            bitmap = new Bitmap(800, 800);
+            baseSize = new Size(800, 800);
+            bitmap = new Bitmap(baseSize.Width, baseSize.Height);
             ClearBitmap();
             InitializeDocument();
             Text = $"Новый {created++}";
@@ -36,6 +39,7 @@ namespace MDIPaint
             InitializeComponent();
             this.filePath = filePath;
             LoadBitmap(filePath);
+            baseSize = new Size(bitmap.Width, bitmap.Height);
             InitializeDocument();
             Text = Path.GetFileName(filePath);
             isSaved = true;
@@ -53,12 +57,11 @@ namespace MDIPaint
             {
                 using (var tempImage = Image.FromFile(path))
                 {
-                    if (tempImage.Width > 5000 || tempImage.Height > 5000)
+                    if (tempImage.Width > 2000 || tempImage.Height > 2000)
                     {
                         throw new ArgumentException("Изображение слишком большое.");
                     }
 
-                    // Создаем новый Bitmap из загруженного изображения
                     bitmap = new Bitmap(tempImage);
                 }
             }
@@ -67,18 +70,21 @@ namespace MDIPaint
                 var parent = MdiParent as MainWindow;
                 MessageBox.Show(parent, "Файл не является изображением.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Close();
+                throw;
             }
             catch (IOException)
             {
                 var parent = MdiParent as MainWindow;
                 MessageBox.Show(parent, "Файл занят другим процессом.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Close();
+                throw;
             }
             catch
             {
                 var parent = MdiParent as MainWindow;
                 MessageBox.Show(parent, "Невозможно открыть файл.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Close();
+                throw;
             }
         }
 
@@ -111,31 +117,27 @@ namespace MDIPaint
                 end = AdjustForScroll(e.Location);
                 if (MainWindow.CurrentBrush == Brushes.Brush)
                 {
-                    // Рисуем линию на основном холсте
                     using (var g = Graphics.FromImage(bitmap))
                     {
-                        DrawLine(g, start, end, MainWindow.CurrentColor, MainWindow.CurrentWidth);
+                        DrawLine(g, start, end, MainWindow.CurrentColor, MainWindow.CurrentWidth * scaleSize);
                     }
 
-                    // Обновляем начальную точку для следующего отрезка
                     start = end;
                 }
                 else if (MainWindow.CurrentBrush == Brushes.Eraser)
                 {
-                    // Стираем изображение
                     using (var g = Graphics.FromImage(bitmap))
                     {
-                        Erase(g, end, MainWindow.CurrentWidth);
+                        Erase(g, end, MainWindow.CurrentWidth * scaleSize);
                     }
 
-                    // Обновляем начальную точку для следующего отрезка
                     start = end;
                 }
                 Invalidate();
             }
 
-            int x = e.X - this.AutoScrollPosition.X;
-            int y = e.Y - this.AutoScrollPosition.Y;
+            int x = e.X - AutoScrollPosition.X;
+            int y = e.Y - AutoScrollPosition.Y;
             if (x >= 0 && x < bitmap.Width && y >= 0 && y < bitmap.Height)
             {
                 switch (MainWindow.CurrentBrush)
@@ -190,17 +192,44 @@ namespace MDIPaint
             if (isMoving)
                 return;
             base.OnPaint(e);
-            e.Graphics.DrawImage(bitmap, this.AutoScrollPosition);
+            e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+            e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
-            if (isDrawing && drawingBitmap != null && MainWindow.CurrentBrush != Brushes.Brush && MainWindow.CurrentBrush != Brushes.Eraser)
+            //Рисуем основное изображение с учетом масштаба и прокрутки
+            int scrollX = AutoScrollPosition.X;
+            int scrollY = AutoScrollPosition.Y;
+            e.Graphics.DrawImage(
+                bitmap,
+                scrollX,
+                scrollY,
+                bitmap.Width,
+                bitmap.Height
+            );
+
+            //Рисуем предпросмотр фигур (линия, эллипс)
+            if (isDrawing && drawingBitmap != null &&
+                MainWindow.CurrentBrush != Brushes.Brush &&
+                MainWindow.CurrentBrush != Brushes.Eraser)
             {
                 using (var g = Graphics.FromImage(drawingBitmap))
                 {
                     g.Clear(Color.White);
+
+                    //Рисуем основное изображение в исходном масштабе
                     g.DrawImage(bitmap, Point.Empty);
+
+                    //Рисуем предпросмотр фигуры
                     DrawPreview(g);
                 }
-                e.Graphics.DrawImage(drawingBitmap, this.AutoScrollPosition);
+
+                //Рисуем временный холст с учетом масштаба и прокрутки
+                e.Graphics.DrawImage(
+                    drawingBitmap,
+                    scrollX,
+                    scrollY,
+                    drawingBitmap.Width,
+                    drawingBitmap.Height
+                );
             }
         }
 
@@ -210,27 +239,27 @@ namespace MDIPaint
             {
                 using (SaveFileDialog saveDialog = new SaveFileDialog())
                 {
-                    // Настройка фильтров
+                    //Настройка фильтров
                     saveDialog.Filter = "BMP (*.bmp)|*.bmp|JPEG (*.jpg)|*.jpg|Все файлы (*.*)|*.*";
                     saveDialog.FilterIndex = 2;
                     saveDialog.DefaultExt = "jpg";
 
                     if (saveDialog.ShowDialog() == DialogResult.OK)
                     {
-                        // Определяем формат на основе выбранного фильтра
+                        //Определяем формат на основе выбранного фильтра
                         ImageFormat format = ImageFormat.Bmp;
                         if (saveDialog.FilterIndex == 2)
                             format = ImageFormat.Jpeg;
 
-                        // Сохраняем изображение
+                        //Сохраняем изображение
                         fd.bitmap.Save(saveDialog.FileName, format);
 
-                        // Обновляем путь и состояние
+                        //Обновляем путь и состояние
                         fd.filePath = saveDialog.FileName;
                         fd.isSaved = true;
                         fd.isModed = false;
 
-                        // Обновляем заголовок окна
+                        //Обновляем заголовок окна
                         fd.Text = Path.GetFileName(fd.filePath);
                     }
                 }
@@ -297,7 +326,7 @@ namespace MDIPaint
                 end = AdjustForScroll(e.Location);
                 isDrawing = false;
 
-                // Рисуем фигуру на основном холсте
+                //Рисуем фигуру на основном холсте
                 using (var g = Graphics.FromImage(bitmap))
                 {
                     DrawFinalShape(g);
@@ -312,8 +341,8 @@ namespace MDIPaint
         private Point AdjustForScroll(Point point)
         {
             return new Point(
-                point.X - this.AutoScrollPosition.X,
-                point.Y - this.AutoScrollPosition.Y
+                (int)(point.X - AutoScrollPosition.X),
+                (int)(point.Y - AutoScrollPosition.Y)
             );
         }
 
@@ -322,10 +351,10 @@ namespace MDIPaint
             switch (MainWindow.CurrentBrush)
             {
                 case Brushes.Line:
-                    DrawLine(g, start, end, MainWindow.CurrentColor, MainWindow.CurrentWidth);
+                    DrawLine(g, start, end, MainWindow.CurrentColor, MainWindow.CurrentWidth * scaleSize);
                     break;
                 case Brushes.Ellipse:
-                    DrawEllipsePreview(g, start, end, MainWindow.CurrentColor, MainWindow.CurrentWidth);
+                    DrawEllipsePreview(g, start, end, MainWindow.CurrentColor, MainWindow.CurrentWidth * scaleSize);
                     break;
 
             }
@@ -336,10 +365,10 @@ namespace MDIPaint
             switch (MainWindow.CurrentBrush)
             {
                 case Brushes.Line:
-                    DrawLine(g, start, end, MainWindow.CurrentColor, MainWindow.CurrentWidth);
+                    DrawLine(g, start, end, MainWindow.CurrentColor, MainWindow.CurrentWidth * scaleSize);
                     break;
                 case Brushes.Ellipse:
-                    DrawEllipse(g, start, end, MainWindow.CurrentColor, MainWindow.CurrentWidth);
+                    DrawEllipse(g, start, end, MainWindow.CurrentColor, MainWindow.CurrentWidth * scaleSize);
                     break;
             }
         }
@@ -372,18 +401,17 @@ namespace MDIPaint
 
             if (MainWindow.IsFilled)
             {
-                // Рисуем закрашенный эллипс для предпросмотра
-                using (var brush = new SolidBrush(Color.FromArgb(128, color))) // Полупрозрачный цвет
+                //Рисуем закрашенный эллипс для предпросмотра
+                using (var brush = new SolidBrush(Color.FromArgb(128, color))) //Полупрозрачный цвет
                 {
                     g.FillEllipse(brush, rect);
                 }
             }
             else
             {
-                // Рисуем только контур для предпросмотра
-                using (var pen = new Pen(color, width))
+                //Рисуем только контур для предпросмотра
+                using (var pen = new Pen(Color.FromArgb(128, color), width))
                 {
-                    pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash; // Пунктир для предпросмотра
                     g.DrawEllipse(pen, rect);
                 }
             }
@@ -395,7 +423,7 @@ namespace MDIPaint
 
             if (MainWindow.IsFilled)
             {
-                // Рисуем закрашенный эллипс
+                //Рисуем закрашенный эллипс
                 using (var brush = new SolidBrush(color))
                 {
                     g.FillEllipse(brush, rect);
@@ -403,7 +431,7 @@ namespace MDIPaint
             }
             else
             {
-                // Рисуем только контур
+                //Рисуем только контур
                 using (var pen = new Pen(color, width))
                 {
                     pen.StartCap = System.Drawing.Drawing2D.LineCap.Round;
@@ -424,14 +452,13 @@ namespace MDIPaint
 
         private void Erase(Graphics g, Point center, float size)
         {
-            using (var brush = new SolidBrush(Color.White)) // Заливаем белым цветом
+            using (var brush = new SolidBrush(Color.White))
             {
-                // Вычисляем координаты квадрата
+                //Вычисляем координаты квадрата
                 float halfSize = size / 2;
                 float x = center.X - halfSize;
                 float y = center.Y - halfSize;
 
-                // Заливаем квадратную область
                 g.FillRectangle(brush, x, y, size, size);
             }
         }
@@ -440,7 +467,7 @@ namespace MDIPaint
             if (!isModed)
             {
                 isModed = true;
-                this.Text += "*"; // Добавляем звездочку к заголовку
+                this.Text += "*";
             }
         }
 
@@ -462,18 +489,58 @@ namespace MDIPaint
                 switch (result)
                 {
                     case DialogResult.Yes:
-                        Save(this); // Сохраняем файл
+                        Save(this); 
                         break;
                     case DialogResult.No:
-                        // Закрываем без сохранения
+                        //Закрываем без сохранения
                         break;
                     case DialogResult.Cancel:
-                        e.Cancel = true; // Отменяем закрытие
+                        e.Cancel = true;
                         return;
                 }
             }
             bitmap?.Dispose();
             bitmap = null;
+        }
+
+        public void ZoomIn()
+        {
+            if (scaleSize >= 2)
+                return;
+            scaleSize += 0.1f;
+            ApplyZoom();
+        }
+
+        public void ZoomOut()
+        {
+            if (scaleSize > 0.2f)
+            {
+                scaleSize -= 0.1f;
+                ApplyZoom();
+            }
+        }
+
+        private void ApplyZoom()
+        {
+            //Вычисляем новый размер изображения
+            int newWidth = (int)(baseSize.Width * scaleSize);
+            int newHeight = (int)(baseSize.Height * scaleSize);
+
+            //Создаем новый Bitmap с новым размером
+            Bitmap scaledBitmap = new Bitmap(newWidth, newHeight);
+
+            //Рисуем исходное изображение с новым масштабом
+            using (Graphics g = Graphics.FromImage(scaledBitmap))
+            {
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                g.DrawImage(bitmap, 0, 0, newWidth, newHeight);
+            }
+
+            //Обновляем bitmap и размеры формы
+            bitmap.Dispose();
+            bitmap = scaledBitmap;
+            AutoScrollMinSize = new Size(newWidth, newHeight);
+            Invalidate();
         }
     }
 }
