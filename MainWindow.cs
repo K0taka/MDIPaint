@@ -21,6 +21,7 @@ namespace MDIPaint
         public static Cursor LineCursor { get; private set; }
         public static Cursor EllipseCursor { get; private set; }
         private Dictionary<string, IPlagin> plugins = new Dictionary<string, IPlagin>();
+        private PluginConfig pluginConfig;
 
         public MainWindow()
         {
@@ -33,7 +34,7 @@ namespace MDIPaint
             UpdateWindowCommands(this);
             IsFilled = false;
             LoadCursors();
-            FindPlugins();
+            InitializePlugins();
             CreatePluginsMenu();
         }
 
@@ -374,10 +375,10 @@ namespace MDIPaint
 
         private void FindPlugins()
         {
+            plugins.Clear();
+
             // Папка с плагинами
             string folder = AppDomain.CurrentDomain.BaseDirectory;
-
-            // Все dll-файлы в этой папке
             string[] files = Directory.GetFiles(folder, "*.dll");
 
             foreach (string file in files)
@@ -393,30 +394,57 @@ namespace MDIPaint
                         if (iface != null)
                         {
                             IPlagin plugin = (IPlagin)Activator.CreateInstance(type);
-                            plugins.Add(plugin.Name, plugin);
+                            plugins[plugin.Name] = plugin; // Всегда добавляем в словарь
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    // Можно добавить логирование ошибок
                     Console.WriteLine($"Ошибка загрузки плагина {file}: {ex.Message}");
                 }
             }
         }
 
-        // Добавьте этот метод для создания меню плагинов
+        private void ShowPluginsManagementDialog()
+        {
+            using (var dialog = new PluginDialog(pluginConfig, plugins))
+            {
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    // Перезагружаем плагины и обновляем меню
+                    InitializePlugins();
+                    CreatePluginsMenu();
+                }
+            }
+        }
+
         private void CreatePluginsMenu()
         {
             // Очищаем предыдущие элементы меню
             фильтрыToolStripMenuItem.DropDownItems.Clear();
 
+            // Добавляем плагины в меню
             foreach (var plugin in plugins)
             {
-                var item = фильтрыToolStripMenuItem.DropDownItems.Add(plugin.Value.Name);
-                item.Tag = plugin.Value;
-                item.Click += OnPluginClick;
+                // Проверяем, должен ли плагин быть доступен
+                bool shouldLoad = pluginConfig.AutoMode ||
+                                (pluginConfig.Plugins.ContainsKey(plugin.Value.Name) &&
+                                 pluginConfig.Plugins[plugin.Value.Name]);
+
+                if (shouldLoad)
+                {
+                    var item = фильтрыToolStripMenuItem.DropDownItems.Add(plugin.Value.Name);
+                    item.Tag = plugin.Value;
+                    item.Click += OnPluginClick;
+                }
             }
+
+            // Добавляем разделитель
+            фильтрыToolStripMenuItem.DropDownItems.Add(new ToolStripSeparator());
+
+            // Добавляем пункт для управления плагинами (без замены основной функциональности)
+            var manageItem = фильтрыToolStripMenuItem.DropDownItems.Add("Управление плагинами...");
+            manageItem.Click += (s, e) => ShowPluginsManagementDialog();
         }
 
         // Обработчик клика по пункту меню плагина
@@ -449,6 +477,20 @@ namespace MDIPaint
             {
                 MessageBox.Show("Нет активного документа для применения фильтра",
                     "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void InitializePlugins()
+        {
+            pluginConfig = PluginConfig.Load();
+            FindPlugins();
+
+            // Обновляем конфиг, если появились новые плагины
+            pluginConfig.UpdatePluginsList(plugins.Keys);
+
+            if (!File.Exists("plugins.config"))
+            {
+                pluginConfig.Save();
             }
         }
     }
