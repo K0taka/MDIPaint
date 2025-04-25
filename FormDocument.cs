@@ -542,5 +542,34 @@ namespace MDIPaint
             AutoScrollMinSize = new Size(newWidth, newHeight);
             Invalidate();
         }
+
+        public Bitmap GetImage()
+        {
+            if (bitmap == null)
+                return null;
+
+            return new Bitmap(bitmap);
+        }
+
+        public void SetImage(Bitmap image)
+        {
+            if (image == null)
+                return;
+
+            bitmap?.Dispose();
+
+            bitmap = new Bitmap(image);
+
+            baseSize = new Size(bitmap.Width, bitmap.Height);
+
+            AutoScrollMinSize = new Size(
+                (int)(baseSize.Width * scaleSize),
+                (int)(baseSize.Height * scaleSize)
+            );
+
+            MarkAsModified();
+
+            Invalidate();
+        }
     }
 }

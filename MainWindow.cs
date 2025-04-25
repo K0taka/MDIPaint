@@ -1,8 +1,11 @@
-﻿using System;
+﻿using PlaaginInterface;
+using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows.Forms;
-
 
 namespace MDIPaint
 {
@@ -17,6 +20,7 @@ namespace MDIPaint
         public static Cursor EraserCursor { get; private set; }
         public static Cursor LineCursor { get; private set; }
         public static Cursor EllipseCursor { get; private set; }
+        private Dictionary<string, IPlagin> plugins = new Dictionary<string, IPlagin>();
 
         public MainWindow()
         {
@@ -29,6 +33,8 @@ namespace MDIPaint
             UpdateWindowCommands(this);
             IsFilled = false;
             LoadCursors();
+            FindPlugins();
+            CreatePluginsMenu();
         }
 
         private void LoadCursors()
@@ -363,6 +369,86 @@ namespace MDIPaint
             if (ActiveMdiChild is FormDocument doc)
             {
                 doc.ZoomOut();
+            }
+        }
+
+        private void FindPlugins()
+        {
+            // Папка с плагинами
+            string folder = AppDomain.CurrentDomain.BaseDirectory;
+
+            // Все dll-файлы в этой папке
+            string[] files = Directory.GetFiles(folder, "*.dll");
+
+            foreach (string file in files)
+            {
+                try
+                {
+                    Assembly assembly = Assembly.LoadFrom(file);
+
+                    foreach (Type type in assembly.GetTypes())
+                    {
+                        Type iface = type.GetInterface("PlaaginInterface.IPlagin");
+
+                        if (iface != null)
+                        {
+                            IPlagin plugin = (IPlagin)Activator.CreateInstance(type);
+                            plugins.Add(plugin.Name, plugin);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Можно добавить логирование ошибок
+                    Console.WriteLine($"Ошибка загрузки плагина {file}: {ex.Message}");
+                }
+            }
+        }
+
+        // Добавьте этот метод для создания меню плагинов
+        private void CreatePluginsMenu()
+        {
+            // Очищаем предыдущие элементы меню
+            фильтрыToolStripMenuItem.DropDownItems.Clear();
+
+            foreach (var plugin in plugins)
+            {
+                var item = фильтрыToolStripMenuItem.DropDownItems.Add(plugin.Value.Name);
+                item.Tag = plugin.Value;
+                item.Click += OnPluginClick;
+            }
+        }
+
+        // Обработчик клика по пункту меню плагина
+        private void OnPluginClick(object sender, EventArgs e)
+        {
+            if (ActiveMdiChild is FormDocument doc)
+            {
+                var menuItem = (ToolStripMenuItem)sender;
+                var plugin = (IPlagin)menuItem.Tag;
+
+                // Получаем изображение из активного документа
+                Bitmap image = doc.GetImage();
+                if (image != null)
+                {
+                    try
+                    {
+                        // Применяем преобразование плагина
+                        plugin.Transform(image);
+                        // Обновляем изображение в документе
+                        doc.SetImage(image);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Ошибка при выполнении плагина: {ex.Message}",
+                            "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Нет активного документа для применения фильтра",
+                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
     }
